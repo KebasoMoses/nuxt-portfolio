@@ -1,0 +1,68 @@
+<template>
+    <article class="prose dark:prose-invert prose-pre:bg-white dark:prose-pre:bg-gray-600 prose-pre:text-gray-700 dark:prose-pre:text-gray-300 max-w-none">
+        <ContentDoc >
+            <!-- {{ doc.body.toc.links }} -->
+            <template #not-found>
+                <div class="flex flex-col justify-center h-screen  items-center">
+                    <div > 
+                        <h1 class="text-9xl">Oops!</h1>
+                    </div>
+                    <div>
+                        <p>404 - PAGE NOT FOUND</p>
+                        <div>
+                            <nuxt-link to="/" class="ml-16 bg-green-600 p-3 rounded-md">Home</nuxt-link>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <template v-slot="{ doc }">
+                <div class="grid grid-cols-6 gap-18 space-x-8">
+                <div :class="{'col-span-6 md:col-span-4': doc.toc, 'col-span-6': !doc.toc}">
+                    <ContentRenderer :value="doc" />
+                </div>
+                <div class="hidden md:col-span-2 md:block not-prose" v-if="doc.toc">
+                    <aside class="sticky top-8">
+                        <div class="font-semibold mb-2">Table Of Contents</div>
+                        <nav>
+                            <TocLinks :links="doc.body.toc.links" :active-id="activeId" />
+                        </nav>
+                    </aside>
+                </div>
+            </div>
+            </template>
+            
+        </ContentDoc>
+    </article>
+</template>
+
+
+<script setup>
+const activeId = ref(null)
+onMounted(() => {
+    const callback = (entries) => {
+        for (const entry of entries) {
+            if (entry.isIntersecting) {
+                activeId.value = entry.target.id
+                break;
+            }
+        }
+    }
+    
+    const observer = new IntersectionObserver((callback), {
+        root: null,
+        threshold: 0.5
+    })
+    const elements = document.querySelectorAll('h2, h3')
+    for (const element of elements) {
+        observer.observe(element)
+    }
+
+    onBeforeUnmount(() => {
+        for (const element of elements) {
+            observer.unobserve(element)
+        }
+    })
+    
+})
+
+</script>
